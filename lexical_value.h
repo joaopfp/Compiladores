@@ -1,24 +1,22 @@
 #ifndef LEXICAL_VALUE_H
 #define LEXICAL_VALUE_H
 
-#include <string.h>
 #include <stdlib.h>
 
-typedef enum TokenType
-{
-    IDENTIFIER,
-    LITERAL,
-    OTHERS
+// Define a type for token categories
+typedef enum {
+    IDENTIFIER, LITERAL
 } TokenType;
 
-typedef struct LexicalValue
-{
-    int lineNumber;
-    TokenType type;
-    char* label;
+// Define the LexicalValue struct
+typedef struct {
+    int line;            // Line number where the token was found
+    TokenType type;      // Type of the token (identifier or literal)
+    char* value;         // Value of the token as a string
 } LexicalValue;
 
-LexicalValue createLexicalValue(char* text, TokenType type, int lineNumber);
-void freeLexicalValue(LexicalValue lexicalValue);
+// Function prototypes
+LexicalValue* create_lexical_value(int line, TokenType type, const char* value);
+void free_lexical_value(LexicalValue* lv);
 
-#endif
+#endif // LEXICAL_VALUE_H
