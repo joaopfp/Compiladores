@@ -1,24 +1,27 @@
-/* Bruno Grohs Vergara e João Pedro Ferreira Pereira
-   Prof. Lucas M. Schnorr - Compiladores - Turma B - 2024/1 */
+#ifndef AST_H
+#define AST_H
 
-#ifndef TREE_H
-#define TREE_H
-
-#include <stdio.h>
 #include <stdlib.h>
 
-typedef struct Node {
-    struct Node* parent; 
-    struct Node* child; 
-    struct Node* sibling; 
-    LexicalValue* lexVal;
-}
+// Define the type of node, which could be extended with more types as needed
+typedef enum {
+    NODE_TYPE_FUNCTION,
+    NODE_TYPE_COMMAND,
+    NODE_TYPE_EXPRESSION
+} NodeType;
 
+// Define a generic AST node structure
+typedef struct ASTNode {
+    NodeType type;               // Type of the node
+    void *data;                  // Pointer to the node's specific content
+    struct ASTNode *firstChild;  // Pointer to the first child node
+    struct ASTNode *nextSibling; // Pointer to the next sibling node
+} ASTNode;
 
-Node* createNode(LexicalValue* value);
-void addChild(Node* parent, Node* child); 
-LexicalValue* createLexicalValue(int lineNum, char* type, char* label)
-void printAST(Node* root, int level);
+// Function prototypes
+ASTNode *create_ast_node(NodeType type, void *data);
+void add_child_node(ASTNode *parent, ASTNode *child);
+void add_sibling_node(ASTNode *node, ASTNode *sibling);
+void free_ast(ASTNode *node);
 
-
-#endif
+#endif // AST_H
