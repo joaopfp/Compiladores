@@ -1,54 +1,55 @@
-/* Bruno Grohs Vergara e João Pedro Ferreira Pereira
-   Prof. Lucas M. Schnorr - Compiladores - Turma B - 2024/1 */
+#include "ast.h"
+#include <stdio.h>
 
-#include "astree.h"
-
-// Function to create a new node with given lexical value
-Node* createNode(LexicalValue* value) {
-    Node* newNode = (Node*)malloc(sizeof(Node));
-    if (!newNode) {
-        fprintf(stderr, "Out of memory error when creating a new node.\n");
-        exit(1);
+// Function to create a new AST node
+ASTNode *create_ast_node(NodeType type, void *data) {
+    ASTNode *node = (ASTNode *)malloc(sizeof(ASTNode));
+    if (node == NULL) {
+        fprintf(stderr, "Failed to allocate memory for AST node\n");
+        exit(EXIT_FAILURE);
     }
-    newNode->parent = NULL;
-    newNode->child = NULL;
-    newNode->sibling = NULL;
-    newNode->lexVal = value;
-    return newNode;
+    node->type = type;
+    node->data = data;
+    node->firstChild = NULL;
+    node->nextSibling = NULL;
+    return node;
 }
 
-// Function to add a child to a node
-void addChild(Node* parent, Node* child) {
-    if (parent->child == NULL) {
-        parent->child = child;
+// Function to add a child to an AST node
+void add_child_node(ASTNode *parent, ASTNode *child) {
+    if (parent == NULL || child == NULL) {
+        fprintf(stderr, "Invalid node pointer(s)\n");
+        return;
+    }
+    if (parent->firstChild == NULL) {
+        parent->firstChild = child;
     } else {
-        Node* temp = parent->child;
-        while (temp->sibling != NULL) {
-            temp = temp->sibling;
+        ASTNode *temp = parent->firstChild;
+        while (temp->nextSibling != NULL) {
+            temp = temp->nextSibling;
         }
-        temp->sibling = child;
+        temp->nextSibling = child;
     }
-    child->parent = parent;
 }
 
-// Function to create a new lexical value
-LexicalValue* createLexicalValue(int lineNum, char* type, char* label) {
-    LexicalValue* newLexVal = (LexicalValue*)malloc(sizeof(LexicalValue));
-    if (!newLexVal) {
-        fprintf(stderr, "Out of memory error when creating a lexical value.\n");
-        exit(1);
+// Function to add a sibling to an AST node
+void add_sibling_node(ASTNode *node, ASTNode *sibling) {
+    if (node == NULL || sibling == NULL) {
+        fprintf(stderr, "Invalid node pointer(s)\n");
+        return;
     }
-    newLexVal->lineNum = lineNum;
-    newLexVal->type = strdup(type);
-    newLexVal->label = strdup(label);
-    return newLexVal;
+    while (node->nextSibling != NULL) {
+        node = node->nextSibling;
+    }
+    node->nextSibling = sibling;
 }
 
-// Function to print the AST for debugging
-void printAST(Node* root, int level) {
-    if (root == NULL) return;
-    for (int i = 0; i < level; i++) printf("  ");
-    printf("Node (%s, %s, Line %d)\n", root->lexVal->type, root->lexVal->label, root->lexVal->lineNum);
-    printAST(root->child, level + 1);
-    printAST(root->sibling, level);
+// Recursive function to free an AST
+void free_ast(ASTNode *node) {
+    if (node != NULL) {
+        free_ast(node->firstChild);
+        free_ast(node->nextSibling);
+        free(node->data); // Assuming 'data' is dynamically allocated
+        free(node);
+    }
 }
