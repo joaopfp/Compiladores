@@ -1,9 +1,11 @@
 /* Bruno Grohs Vergara e João Pedro Ferreira Pereira
    Prof. Lucas M. Schnorr - Compiladores - Turma B - 2024/1 */
 %{
-int line_number = 1;
-int yylineno;
+#include "lexical_value.h"
 #include "parser.tab.h"
+
+int yylineno = 1; // No need for a separate line_number if yylineno is used directly
+
 %}
 
 %x BIG_COMMENT
@@ -12,38 +14,106 @@ int yylineno;
 %option yylineno
 %option noyywrap
 
+%union {
+    LexicalValue *lexical_value;
+}
+
+%token <lexical_value> TK_PR_INT TK_PR_FLOAT TK_PR_BOOL TK_PR_IF TK_PR_ELSE TK_PR_WHILE TK_PR_RETURN
+%token <lexical_value> TK_OC_LE TK_OC_GE TK_OC_EQ TK_OC_NE TK_OC_AND TK_OC_OR
+%token <lexical_value> TK_LIT_FALSE TK_LIT_TRUE TK_IDENTIFICADOR TK_LIT_INT TK_LIT_FLOAT
+
 %%
 
-"int" {return TK_PR_INT;}
-"float" {return TK_PR_FLOAT;}
-"bool" {return TK_PR_BOOL;}
-"if" {return TK_PR_IF;}
-"else" {return TK_PR_ELSE;}
-"while" {return TK_PR_WHILE;}
-"return" {return TK_PR_RETURN;}
+"int" {
+    yylval.lexical_value = create_lexical_value(yylineno, LITERAL, yytext);
+    return TK_PR_INT;
+}
+"float" {
+    yylval.lexical_value = create_lexical_value(yylineno, LITERAL, yytext);
+    return TK_PR_FLOAT;
+}
+"bool" {
+    yylval.lexical_value = create_lexical_value(yylineno, LITERAL, yytext);
+    return TK_PR_BOOL;
+}
+"if" {
+    yylval.lexical_value = create_lexical_value(yylineno, LITERAL, yytext);
+    return TK_PR_IF;
+}
+"else" {
+    yylval.lexical_value = create_lexical_value(yylineno, LITERAL, yytext);
+    return TK_PR_ELSE;
+}
+"while" {
+    yylval.lexical_value = create_lexical_value(yylineno, LITERAL, yytext);
+    return TK_PR_WHILE;
+}
+"return" {
+    yylval.lexical_value = create_lexical_value(yylineno, LITERAL, yytext);
+    return TK_PR_RETURN;
+}
 
-"<=" {return TK_OC_LE;}
-">=" {return TK_OC_GE;}
-"==" {return TK_OC_EQ;}
-"!=" {return TK_OC_NE;}
-"&" {return TK_OC_AND;}
-"|" {return TK_OC_OR;}
+"<=" {
+    yylval.lexical_value = create_lexical_value(yylineno, LITERAL, yytext);
+    return TK_OC_LE;
+}
+">=" {
+    yylval.lexical_value = create_lexical_value(yylineno, LITERAL, yytext);
+    return TK_OC_GE;
+}
+"==" {
+    yylval.lexical_value = create_lexical_value(yylineno, LITERAL, yytext);
+    return TK_OC_EQ;
+}
+"!=" {
+    yylval.lexical_value = create_lexical_value(yylineno, LITERAL, yytext);
+    return TK_OC_NE;
+}
+"&" {
+    yylval.lexical_value = create_lexical_value(yylineno, LITERAL, yytext);
+    return TK_OC_AND;
+}
+"|" {
+    yylval.lexical_value = create_lexical_value(yylineno, LITERAL, yytext);
+    return TK_OC_OR;
+}
 
-[-!*/%+<>{}()=,;] {return yytext[0];}
+[-!*/%+<>{}()=,;] {
+    yylval.lexical_value = create_lexical_value(yylineno, LITERAL, yytext);
+    return yytext[0];
+}
 
-"false" {return TK_LIT_FALSE;}
-"true" {return TK_LIT_TRUE;}
-[a-z_][0-9a-z_]* {return TK_IDENTIFICADOR;}
-[0-9]+ {return TK_LIT_INT;}
-[0-9]*\.[0-9]+ {return TK_LIT_FLOAT;}
+"false" {
+    yylval.lexical_value = create_lexical_value(yylineno, LITERAL, yytext);
+    return TK_LIT_FALSE;
+}
+"true" {
+    yylval.lexical_value = create_lexical_value(yylineno, LITERAL, yytext);
+    return TK_LIT_TRUE;
+}
+[a-z_][0-9a-z_]* {
+    yylval.lexical_value = create_lexical_value(yylineno, IDENTIFIER, yytext);
+    return TK_IDENTIFICADOR;
+}
+[0-9]+ {
+    yylval.lexical_value = create_lexical_value(yylineno, LITERAL, yytext);
+    return TK_LIT_INT;
+}
+[0-9]*\.[0-9]+ {
+    yylval.lexical_value = create_lexical_value(yylineno, LITERAL, yytext);
+    return TK_LIT_FLOAT;
+}
 
-\n {++line_number;}
+\n {++yylineno;}
 [ \t]
 
 "/*" {BEGIN(BIG_COMMENT);}
 "//" {BEGIN(LINE_COMMENT);}
 
-. {return TK_ERRO;}
+. {
+    yylval.lexical_value = create_lexical_value(yylineno, LITERAL, yytext);
+    return TK_ERRO;
+}
 
 <BIG_COMMENT>"*/" {BEGIN(INITIAL);}
 <BIG_COMMENT>.
@@ -53,7 +123,6 @@ int yylineno;
 
 %%
 
-    
-int get_line_number(void){
+int get_line_number(void) {
     return yylineno;
 }
