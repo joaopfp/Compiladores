@@ -5,6 +5,7 @@
 int yylex(void);
 void yyerror (char const *mensagem);
 extern int get_line_number(void);
+extern void *arvore;
 %}
 
 %token TK_PR_INT
@@ -119,13 +120,13 @@ extern int get_line_number(void);
     }
 
 
-    //TODO
     function_header: '(' parameters_list ')' TK_OC_OR type '/' TK_IDENTIFICADOR
     {
+        $$ = createNode($7);
         freeLexicalValue($1);
         addChild($$, $2);
         freeLexicalValue($3);
-
+        freeLexicalValue($6);
     }
 
     
@@ -158,34 +159,34 @@ extern int get_line_number(void);
     command_block: command_block command ','
     {
         addChild($1);
-        $$ = 1;
+        $$ = $1;
         freeLexicalValue($2);
     }
 
     command_block: command ','
     {
-        $$ = 1;
+        $$ = $1;
         freeLexicalValue($2)
     }
 
     command: variable_declaration
     {
-        $$ = 1;
+        $$ = $1;
     }
 
     command: attribution
     {
-        $$ = 1;
+        $$ = $1;
     }
 
     command: control_flow_construction
     {
-        $$ = 1;
+        $$ = $1;
     }
 
     command: return_operation
     {
-        $$ = 1;
+        $$ = $1;
     }
 
     command: '{' command_block '}'
@@ -196,10 +197,9 @@ extern int get_line_number(void);
     }
 
 
-    //TODO: 
     variable_declaration: type TK_IDENTIFICADOR_list
     {
-
+        $$ = $2;
     }
 
     attribution: TK_IDENTIFICADOR '=' expression
