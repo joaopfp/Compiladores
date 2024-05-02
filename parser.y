@@ -323,6 +323,7 @@ extern void *arvore;
     {
         $$ = $1
     }
+    
     expression5: expression5 '+' expression6
     {
         $$ = createNode($2)
@@ -336,7 +337,8 @@ extern void *arvore;
         addChild($$, $1)
         addChild($$, $3)
     }
-    expression5: expression6 
+    
+    expression5: expression6
     {
         $$ = $1
     }
@@ -346,18 +348,21 @@ extern void *arvore;
         addChild($$, $1)
         addChild($$, $3)
     }
+    
     expression6: expression6 '/' expression7
     {
         $$ = createNode($2)
         addChild($$, $1)
         addChild($$, $3)
     }
+    
     expression6: expression6 '%' expression7
     {
         $$ = createNode($2)
         addChild($$, $1)
         addChild($$, $3)
     }
+    
     expression6: expression7
     {
         $$ = $1
@@ -368,15 +373,18 @@ extern void *arvore;
         addChild($$, $1)
         addChild($$, $3)
     }
+    
     expression7: '-' expression8
     {
         $$ = createNode($1)
         addChild($$, $2)
     }
+    
     expression7: expression8
     {
         $$ = $1
     }
+    
     expression8: '(' expression ')'
     {
         freeLexicalValue($1);
