@@ -80,7 +80,7 @@ extern void *arvore;
 
     elements_list: elements_list element 
     {
-        $$ = 2;
+        $$ = $2;
         addChild($$, $1)
     }
 
@@ -123,9 +123,10 @@ extern void *arvore;
     function_header: '(' parameters_list ')' TK_OC_OR type '/' TK_IDENTIFICADOR
     {
         $$ = createNode($7);
-        freeLexicalValue($1);
         addChild($$, $2);
+        freeLexicalValue($1);
         freeLexicalValue($3);
+        freeLexicalValue($4);
         freeLexicalValue($6);
     }
 
@@ -152,14 +153,15 @@ extern void *arvore;
 
     function_body: '{' '}'
     {
+        $$ = NULL;
         freeLexicalValue($1);
         freeLexicalValue($2);
     }
 
     command_block: command_block command ','
     {
-        addChild($1);
-        $$ = $1;
+        addChild($$, $1);
+        $$ = $2;
         freeLexicalValue($2);
     }
 
@@ -192,8 +194,8 @@ extern void *arvore;
     command: '{' command_block '}'
     {
         freeLexicalValue($1);
-        $$ = $1;
-        freeLexicalValue($2);
+        $$ = $2;
+        freeLexicalValue($3);
     }
 
 
