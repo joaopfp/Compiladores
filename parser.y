@@ -5,6 +5,7 @@
 int yylex(void);
 void yyerror (char const *mensagem);
 extern int get_line_number(void);
+extern void *arvore;
 %}
 
 %token TK_PR_INT
@@ -79,7 +80,7 @@ extern int get_line_number(void);
 
     elements_list: elements_list element 
     {
-        $$ = 2;
+        $$ = $2;
         addChild($$, $1)
     }
 
@@ -119,13 +120,14 @@ extern int get_line_number(void);
     }
 
 
-    //TODO
     function_header: '(' parameters_list ')' TK_OC_OR type '/' TK_IDENTIFICADOR
     {
-        freeLexicalValue($1);
+        $$ = createNode($7);
         addChild($$, $2);
+        freeLexicalValue($1);
         freeLexicalValue($3);
-
+        freeLexicalValue($4);
+        freeLexicalValue($6);
     }
 
     
@@ -151,55 +153,55 @@ extern int get_line_number(void);
 
     function_body: '{' '}'
     {
+        $$ = NULL;
         freeLexicalValue($1);
         freeLexicalValue($2);
     }
 
     command_block: command_block command ','
     {
-        addChild($1);
-        $$ = 1;
+        addChild($$, $1);
+        $$ = $2;
         freeLexicalValue($2);
     }
 
     command_block: command ','
     {
-        $$ = 1;
+        $$ = $1;
         freeLexicalValue($2)
     }
 
     command: variable_declaration
     {
-        $$ = 1;
+        $$ = $1;
     }
 
     command: attribution
     {
-        $$ = 1;
+        $$ = $1;
     }
 
     command: control_flow_construction
     {
-        $$ = 1;
+        $$ = $1;
     }
 
     command: return_operation
     {
-        $$ = 1;
+        $$ = $1;
     }
 
     command: '{' command_block '}'
     {
         freeLexicalValue($1);
-        $$ = $1;
-        freeLexicalValue($2);
+        $$ = $2;
+        freeLexicalValue($3);
     }
 
 
-    //TODO: 
     variable_declaration: type TK_IDENTIFICADOR_list
     {
-
+        $$ = $2;
     }
 
     attribution: TK_IDENTIFICADOR '=' expression
@@ -323,6 +325,7 @@ extern int get_line_number(void);
     {
         $$ = $1
     }
+    
     expression5: expression5 '+' expression6
     {
         $$ = createNode($2)
@@ -336,7 +339,8 @@ extern int get_line_number(void);
         addChild($$, $1)
         addChild($$, $3)
     }
-    expression5: expression6 
+    
+    expression5: expression6
     {
         $$ = $1
     }
@@ -346,18 +350,21 @@ extern int get_line_number(void);
         addChild($$, $1)
         addChild($$, $3)
     }
+    
     expression6: expression6 '/' expression7
     {
         $$ = createNode($2)
         addChild($$, $1)
         addChild($$, $3)
     }
+    
     expression6: expression6 '%' expression7
     {
         $$ = createNode($2)
         addChild($$, $1)
         addChild($$, $3)
     }
+    
     expression6: expression7
     {
         $$ = $1
@@ -368,15 +375,18 @@ extern int get_line_number(void);
         addChild($$, $1)
         addChild($$, $3)
     }
+    
     expression7: '-' expression8
     {
         $$ = createNode($1)
         addChild($$, $2)
     }
+    
     expression7: expression8
     {
         $$ = $1
     }
+    
     expression8: '(' expression ')'
     {
         freeLexicalValue($1);
