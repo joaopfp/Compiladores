@@ -1,14 +1,18 @@
-main: flex main.c
-	gcc main.c -c
-	gcc -o etapa3 lex.yy.o parser.tab.o main.o
-
-flex: bison scanner.l
-	flex scanner.l
-	gcc -c lex.yy.c
-
-bison: parser.y
+main: main.c
 	bison -d parser.y
-	gcc -c parser.tab.c
+	flex scanner.l
+	gcc main.c lexical_value.c tree.c parser.tab.c lex.yy.c -c # gera main.o
+	gcc main.o lexical_value.o tree.o parser.tab.o lex.yy.o -o etapa3
 
-clean:
-	rm -f *.o *.h etapa3 lex.yy.c parser.tab.c
+debug: main.c
+	bison -d parser.y --report-file parser.output -Wcounterexamples
+	flex scanner.l
+	gcc main.c lexical_value.c tree.c parser.tab.c lex.yy.c -c # gera main.o
+	gcc main.o lexical_value.o tree.o parser.tab.o lex.yy.o -o etapa3
+
+scanner: scanner.l
+	flex scanner.l
+	gcc lex.yy.c -c #gera lex.yy.o
+
+all: main scanner
+	gcc lex.yy.o main.o -o etapa3
