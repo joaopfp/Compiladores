@@ -1,55 +1,112 @@
-#include "ast.h"
-#include <stdio.h>
+#include "tree.h"
 
-// Function to create a new AST node
-ASTNode *create_ast_node(NodeType type, void *data) {
-    ASTNode *node = (ASTNode *)malloc(sizeof(ASTNode));
-    if (node == NULL) {
-        fprintf(stderr, "Failed to allocate memory for AST node\n");
-        exit(EXIT_FAILURE);
-    }
-    node->type = type;
-    node->data = data;
-    node->firstChild = NULL;
-    node->nextSibling = NULL;
+Node* createNode(LexicalValue lexicalValue)
+{
+    Node* node = malloc(sizeof(Node));
+
+    node->lexicalValue = lexicalValue;
+    node->parent = NULL;
+    node->brother = NULL;
+    node->child = NULL;
+
     return node;
 }
 
-// Function to add a child to an AST node
-void add_child_node(ASTNode *parent, ASTNode *child) {
-    if (parent == NULL || child == NULL) {
-        fprintf(stderr, "Invalid node pointer(s)\n");
+Node* createNodeToFunctionCall(LexicalValue lexicalValue)
+{
+    Node* node = createNode(lexicalValue);
+
+    char* start = "call ";
+    char* newLabel = malloc(strlen(start) + strlen(node->lexicalValue.label) + 1);
+
+    strcpy(newLabel, start);
+    strcat(newLabel, node->lexicalValue.label);
+
+    free(node->lexicalValue.label);
+    node->lexicalValue.label = newLabel;
+
+    return node;
+}
+
+void addChild(Node* parent, Node* child)
+{
+    if (!child) return;
+
+    if (!parent)
+    {
+        removeNode(child);
         return;
     }
-    if (parent->firstChild == NULL) {
-        parent->firstChild = child;
-    } else {
-        ASTNode *temp = parent->firstChild;
-        while (temp->nextSibling != NULL) {
-            temp = temp->nextSibling;
-        }
-        temp->nextSibling = child;
+
+    Node* lastChild = getLastChild(parent);
+    if (lastChild)
+    {
+        lastChild->brother = child;
+    }
+    else
+    {
+        parent->child = child;
+    }
+    child->parent = parent;
+}
+
+Node* getLastChild(Node* parent)
+{
+    Node* currentChild = NULL;
+    Node* lastChild = parent->child;
+    while (lastChild)
+    {
+        currentChild = lastChild;
+        lastChild = lastChild->brother;
+    }
+    return currentChild;
+}
+
+void removeNode(Node* node)
+{
+    if (!node) return;
+
+    freeLexicalValue(node->lexicalValue);
+
+    removeNode(node->child);
+    removeNode(node->brother);
+
+    free(node);
+}
+
+void exporta(Node* node)
+{
+    if (!node) return;
+
+    printHeader(node);
+    printTree(node);
+}
+
+void printHeader(Node* node)
+{
+    printf("%p [label=\"%s\"];\n", node, node->lexicalValue.label);
+    if (node->child)
+    {
+        printHeader(node->child);
+    }
+    if (node->brother)
+    {
+        printHeader(node->brother);
     }
 }
 
-// Function to add a sibling to an AST node
-void add_sibling_node(ASTNode *node, ASTNode *sibling) {
-    if (node == NULL || sibling == NULL) {
-        fprintf(stderr, "Invalid node pointer(s)\n");
-        return;
+void printTree(Node* node)
+{
+    if (node->parent)
+    {
+        printf("%p, %p\n", node->parent, node);
     }
-    while (node->nextSibling != NULL) {
-        node = node->nextSibling;
+    if (node->child)
+    {
+        printTree(node->child);
     }
-    node->nextSibling = sibling;
-}
-
-// Recursive function to free an AST
-void free_ast(ASTNode *node) {
-    if (node != NULL) {
-        free_ast(node->firstChild);
-        free_ast(node->nextSibling);
-        free(node->data); // Assuming 'data' is dynamically allocated
-        free(node);
+    if (node->brother)
+    {
+        printTree(node->brother);
     }
 }
